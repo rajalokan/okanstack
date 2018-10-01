@@ -341,7 +341,7 @@ function backup_if_present(){
 
 function run_ansible_role {
     role=$1
-    [[ -z $3 ]] && TAGS="--tags $3" || TAGS=""
+    [[ -z $3 ]] && TAGS="" || TAGS="--tags $3"
     _log "Running ansible role $1"
     
     ansible_roles_path="${HOME}/.ansible/roles"
