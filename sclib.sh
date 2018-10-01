@@ -352,7 +352,7 @@ function run_ansible_role {
     # Ensure git is installed
     is_package_installed git || install_package git
 
-    if [[ ! -d ${dotfiles_path} ]]; then
+    if [[ ! -d ${role_path} ]]; then
         git clone ${role_repo} ${role_path}
     fi
 
