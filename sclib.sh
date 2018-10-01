@@ -341,6 +341,7 @@ function backup_if_present(){
 
 function run_ansible_role {
     role=$1
+    [[ -z $3 ]] && TAGS="--tags $3" || TAGS=""
     _log "Running ansible role $1"
     
     ansible_roles_path="${HOME}/.ansible/roles"
@@ -360,6 +361,6 @@ function run_ansible_role {
     is_package_installed ansible || info_block "ansible not installed. Exiting"
 
     pushd ${role_path} >/dev/null
-        ansible-playbook -i "localhost," -c local playbook.yaml
+        ansible-playbook -i "localhost," -c local ${TAGS} playbook.yaml
     popd
 }
