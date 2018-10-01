@@ -353,7 +353,7 @@ function run_ansible_role {
     is_package_installed git || install_package git
 
     if [[ ! -d ${dotfiles_path} ]]; then
-        git clone ${dotfiles_repo} ${dotfiles_path}
+        git clone ${role_repo} ${role_path}
     fi
 
     # Ensure latest ansible is installed
