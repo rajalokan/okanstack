@@ -346,7 +346,7 @@ function run_ansible_role {
     ansible_roles_path="${HOME}/.ansible/roles"
     mkdir -p ${ansible_roles_path}
 
-    role_path="${ansible_roles_path}/ansible-role-$1"
+    role_path="${ansible_roles_path}/$1"
     role_repo="https://github.com/rajalokan/ansible-role-$1"
 
     # Ensure git is installed
