@@ -338,3 +338,8 @@ function backup_if_present(){
         mv $1 $1.bak.$(date +"%d_%m_%Y_%H%M%S")
     fi
 }
+
+function run_ansible_role {
+    role=$1
+    _log "Running ansible role $1"
+}
