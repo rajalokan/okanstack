@@ -342,4 +342,24 @@ function backup_if_present(){
 function run_ansible_role {
     role=$1
     _log "Running ansible role $1"
+    
+    ansible_roles_path="${HOME}/.ansible/roles"
+    mkdir -p ${ansible_roles_path}
+
+    role_path="${ansible_roles_path}/ansible-role-$1"
+    role_repo="https://github.com/rajalokan/ansible-role-$1"
+
+    # Ensure git is installed
+    is_package_installed git || install_package git
+
+    if [[ ! -d ${dotfiles_path} ]]; then
+        git clone ${dotfiles_repo} ${dotfiles_path}
+    fi
+
+    # Ensure latest ansible is installed
+    is_package_installed ansible || info_block "ansible not installed. Exiting"
+
+    pushd ${role_path} >/dev/null
+        ansible-playbook -i "localhost," -c local playbook.yaml
+    popd
 }
