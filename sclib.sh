@@ -343,7 +343,7 @@ function run_ansible_role {
     role=$1
     [[ -z $3 ]] && TAGS="" || TAGS="--tags $3"
     _log "Running ansible role $1"
-    
+
     ansible_roles_path="${HOME}/.ansible/roles"
     mkdir -p ${ansible_roles_path}
 
@@ -363,4 +363,16 @@ function run_ansible_role {
     pushd ${role_path} >/dev/null
         ansible-playbook -i "localhost," -c local ${TAGS} playbook.yaml
     popd
+}
+
+function install_ansible {
+    if ! is_package_installed ansible; then
+        if is_ubuntu; then
+            sudo apt-add-repository -y ppa:ansible/ansible
+            sudo apt update
+        else
+            sudo yum install -y epel-release
+        fi
+        install_package ansible
+    fi
 }
