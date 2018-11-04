@@ -376,3 +376,132 @@ function install_ansible {
         install_package ansible
     fi
 }
+
+# ==============================================================================
+# Bootstrapping a new VM
+# ==============================================================================
+
+function boot_vm {
+    _display_inputs
+    _boot
+    _add_floating_ip
+    _assign_instance_ip
+    _add_to_ssh_config
+    _verify_ssh
+    _preconfigure_vm
+}
+
+function _display_inputs {
+    APPEND_ALOK=${APPEND_ALOK:-}
+    [[ -z ${APPEND_ALOK} ]] &&  INSTANCE_NAME="alok-${SERVER_NAME}" || INSTANCE_NAME="${SERVER_NAME}"
+    NETWORK=${NETWORK:-"alok_net"}
+    FLAVOR=${FLAVOR:-"m1.small"}
+    SEC_GROUP=${SEC_GROUP:-"alok-secgrp"}
+    KEY_NAME=${KEY_NAME:-"alok_cloud"}
+    OS_TYPE=${OS_TYPE:-"ubuntu"}
+    ADD_PUBLIC_IP=${ADD_PUBLIC_IP:-"false"}
+
+    [[ ${OS_TYPE} == "ubuntu" ]] && SSH_USER="ubuntu" || SSH_USER="centos"
+    [[ ${OS_TYPE} == "ubuntu" ]] && IMAGE="ubuntu-16.04" || IMAGE="centos7.4-1802"
+    info_block "Configuration of new VM will be:"
+    _log "Name            : ${INSTANCE_NAME}"
+    _log "Image           : ${IMAGE}"
+    _log "Network         : ${NETWORK}"
+    _log "Flavor          : ${FLAVOR}"
+    _log "SecGroup        : ${SEC_GROUP}"
+    _log "Key             : ${KEY_NAME}"
+    _log "IP              : ${PUBLIC_IP}"
+    _log "ADD_PUBLIC_IP   : ${ADD_PUBLIC_IP}"
+    _log "User            : ${SSH_USER}"
+}
+
+function _boot {
+    info_block "Booting new VM ${SERVER_NAME}"
+    openstack server create --insecure \
+      --image ${IMAGE} \
+      --flavor ${FLAVOR} \
+      --security-group ${SEC_GROUP} \
+      --key-name ${KEY_NAME} \
+      --network ${NETWORK} \
+      ${INSTANCE_NAME}
+    _log "VM booted. Waiting for its status to turn ACTIVE"
+    for i in {1..5}; do [[ $(openstack server show --insecure ${INSTANCE_NAME} -f value -c status) == "ACTIVE" ]] && break || sleep 5; done
+    _list_servers
+}
+
+function _add_floating_ip {
+    if [[ ! -z ${PUBLIC_IP} ]]; then
+        _log "Adding floating ip ${PUBLIC_IP} to ${INSTANCE_NAME}"
+        openstack server add floating ip --insecure ${INSTANCE_NAME} ${PUBLIC_IP}
+    elif [[ ${ADD_PUBLIC_IP} = "true" ]]; then
+        PUBLIC_IP=$(openstack floating ip list --insecure --status DOWN -f value -c "Floating IP Address" | head -n 1)
+        _log "Adding floating ip ${PUBLIC_IP} to ${INSTANCE_NAME}"
+        openstack server add floating ip --insecure ${INSTANCE_NAME} ${PUBLIC_IP}
+    fi
+    _list_servers
+}
+
+function _assign_instance_ip {
+    if [[ -z ${PUBLIC_IP} ]]; then
+      INSTANCE_IP=$(openstack server show --insecure -f 'value' -c 'addresses' ${INSTANCE_NAME} | cut -d'=' -f2)
+    else
+      INSTANCE_IP=${PUBLIC_IP}
+    fi
+    _log "New Instance IP is : ${INSTANCE_IP}"
+}
+
+function _add_to_ssh_config {
+    HOST="${SERVER_NAME}"
+    [[ ${KEY_NAME} == "alok_cloud" ]] && SSH_KEY="cloud" || SSH_KEY="alokaptira"
+    host_string="Host ${HOST}"
+
+    read -d '' new_host_string <<- EOM
+Host ${HOST}
+  HostName ${INSTANCE_IP}
+  User ${SSH_USER}
+  IdentityFile ~/.ssh/${SSH_KEY}.pem
+EOM
+    search=`grep "${host_string}" ~/.ssh/config`
+    if [[ ${search} = ${host_string} ]]; then
+        sed -i "/${host_string}/,+3 d" ~/.ssh/config
+        echo "$new_host_string" >> ~/.ssh/config
+    else
+        echo "$new_host_string" >> ~/.ssh/config
+    fi
+    _log "SSH configuration updated"
+    cat ~/.ssh/config
+}
+
+function _verify_ssh {
+    ssh ${SERVER_NAME} exit \
+      && [ $? == 0 ] \
+        && _log "Success" \
+        || {
+          ssh-keygen -f "/home/${USER}/.ssh/known_hosts" -R ${INSTANCE_IP}; \
+          ssh ${SERVER_NAME} exit && _log "Success after adding correct host key." || _error "Failed"; \
+        }
+}
+
+function _list_servers {
+    _log "Listing servers"
+    if [[ -z ${APPEND_ALOK} ]]; then
+        openstack server list --insecure | grep alok
+    else
+        openstack server list --insecure
+    fi
+}
+
+function _preconfigure_instance {
+    SERVER_NAME=${1:-}
+    ssh -T ${SERVER_NAME} << EOF
+sudo hostname ${SERVER_NAME}
+grep -q ${SERVER_NAME} /etc/hosts || sudo sed -i "2i127.0.1.1  ${SERVER_NAME}" /etc/hosts
+EOF
+
+    if ${OS_TYPE} == "ubuntu"; then
+        sudo apt update
+    elif ${OS_TYPE} == "centos"; then
+        sudo yum install -y epel-release
+        sudo yum install -y wget vim bash-completion
+    fi
+}
