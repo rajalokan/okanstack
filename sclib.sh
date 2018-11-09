@@ -493,14 +493,12 @@ function _list_servers {
 
 function _preconfigure_instance {
     SERVER_NAME=${1:-}
-    ssh -T ${SERVER_NAME} << EOF
-sudo hostname ${SERVER_NAME}
-grep -q ${SERVER_NAME} /etc/hosts || sudo sed -i "2i127.0.1.1  ${SERVER_NAME}" /etc/hosts
-EOF
+    sudo hostname ${SERVER_NAME}
+    grep -q ${SERVER_NAME} /etc/hosts || sudo sed -i "2i127.0.1.1  ${SERVER_NAME}" /etc/hosts
 
-    if ${OS_TYPE} == "ubuntu"; then
+    if [[ ${os_VENDOR,,} == "ubuntu" ]]; then
         sudo apt update
-    elif ${OS_TYPE} == "centos"; then
+    elif [[ ${os_VENDOR,,} == "centos" ]]; then
         sudo yum install -y epel-release
         sudo yum install -y wget vim bash-completion
     fi
