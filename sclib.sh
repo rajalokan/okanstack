@@ -492,6 +492,7 @@ function _list_servers {
 }
 
 function _preconfigure_instance {
+    GetOSVersion
     SERVER_NAME=${1:-}
     sudo hostname ${SERVER_NAME}
     grep -q ${SERVER_NAME} /etc/hosts || sudo sed -i "2i127.0.1.1  ${SERVER_NAME}" /etc/hosts
