@@ -358,14 +358,14 @@ function run_ansible_role {
     fi
 
     # Ensure latest ansible is installed
-    is_package_installed ansible || info_block "ansible not installed. Exiting"
+    is_package_installed ansible || _install_ansible
 
     pushd ${role_path} >/dev/null
         ansible-playbook -i "localhost," -c local ${TAGS} playbook.yaml
     popd
 }
 
-function install_ansible {
+function _install_ansible {
     if ! is_package_installed ansible; then
         if is_ubuntu; then
             sudo apt-add-repository -y ppa:ansible/ansible
