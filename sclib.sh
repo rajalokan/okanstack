@@ -520,7 +520,7 @@ function is_ubuntu {
 }
 
 # //////////////////////////////////////////////////////////////////////////////
-function setup_bash(parameter) {
+function setup_bash() {
     base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/bash"
     if is_ubuntu; then
         # Fetch bashrc & profile
@@ -546,18 +546,18 @@ function setup_bash(parameter) {
     wget -q "$base_url/pureline.conf" -O ~/.pureline.conf
 }
 
-function setup_vim(parameter) {
+function setup_vim() {
     is_package_installed vim || install_package vim
 }
 
-function setup_git(parameter) {
+function setup_git() {
     is_package_installed git || install_package git
     base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/git"
     wget -q "$file_path/gitconfig" -O ~/.gitconfig
     wget -q "$file_path/gitignore" -O ~/.gitignore
 }
 
-function setup_tmux(parameter) {
+function setup_tmux() {
     is_package_installed tmux || install_package tmux
     base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/tmux"
     wget -q "$file_path/tmux.conf" -O ~/.tmux.conf
