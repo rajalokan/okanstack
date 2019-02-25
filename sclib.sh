@@ -347,6 +347,7 @@ function _preconfigure_instance {
         sudo yum install -y epel-release
         sudo yum install -y wget vim bash-completion
     fi
+    setup_bash
 }
 
 # ////////////////////////////////// Functions ////////////////////////////////
