@@ -379,17 +379,17 @@ function get_pip {
 
     # If GET_PIP_URL is set, then just use it
     if [ -n "${GET_PIP_URL:-}" ]; then
-      curl --silent ${GET_PIP_URL} > /opt/get-pip.py
-      if head -n 1 /opt/get-pip.py | grep python; then
-        python /opt/get-pip.py ${PIP_INSTALL_OPTIONS}
+      curl --silent ${GET_PIP_URL} > /tmp/get-pip.py
+      if head -n 1 /tmp/get-pip.py | grep python; then
+        python /tmp/get-pip.py ${PIP_INSTALL_OPTIONS}
         return
       fi
     fi
 
     # Try getting pip from bootstrap.pypa.io as a primary source
-    curl --silent https://bootstrap.pypa.io/get-pip.py > /opt/get-pip.py
-    if head -n 1 /opt/get-pip.py | grep python; then
-      sudo -H python /opt/get-pip.py ${PIP_INSTALL_OPTIONS}
+    curl --silent https://bootstrap.pypa.io/get-pip.py > /tmp/get-pip.py
+    if head -n 1 /tmp/get-pip.py | grep python; then
+      sudo -H python /tmp/get-pip.py ${PIP_INSTALL_OPTIONS}
       return
     fi
 
