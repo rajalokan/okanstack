@@ -522,6 +522,7 @@ function is_ubuntu {
 
 # //////////////////////////////////////////////////////////////////////////////
 function setup_bash() {
+    GetOSVersion
     base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/bash"
     if is_ubuntu; then
         # Fetch bashrc & profile
@@ -554,8 +555,8 @@ function setup_vim() {
 function setup_git() {
     is_package_installed git || install_package git
     base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/git"
-    wget -q "$file_path/gitconfig" -O ~/.gitconfig
-    wget -q "$file_path/gitignore" -O ~/.gitignore
+    wget -q "$base_url/gitconfig" -O ~/.gitconfig
+    wget -q "$base_url/gitignore" -O ~/.gitignore
 }
 
 function setup_tmux() {
