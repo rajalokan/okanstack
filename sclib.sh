@@ -227,23 +227,23 @@ function _install_ansible {
 
 function boot_vm {
     _display_inputs
-    _boot
-    _add_floating_ip
-    _assign_instance_ip
+    # _boot
+    # _add_floating_ip
+    # _assign_instance_ip
     _add_to_ssh_config
     _verify_ssh
-    _preconfigure_vm
+    _preconfigure_instance ${SERVER_NAME}
 }
 
 function _display_inputs {
-    APPEND_ALOK=${APPEND_ALOK:-}
+    APPEND_ALOK=${APPEND_ALOK:-"true"}
     [[ -z ${APPEND_ALOK} ]] &&  INSTANCE_NAME="alok-${SERVER_NAME}" || INSTANCE_NAME="${SERVER_NAME}"
-    NETWORK=${NETWORK:-"alok_net"}
+    NETWORK=${NETWORK:-""}
     FLAVOR=${FLAVOR:-"m1.small"}
-    SEC_GROUP=${SEC_GROUP:-"alok-secgrp"}
-    KEY_NAME=${KEY_NAME:-"alok_cloud"}
+    SEC_GROUP=${SEC_GROUP:-"default"}
+    KEY_NAME=${KEY_NAME:-""}
     OS_TYPE=${OS_TYPE:-"ubuntu"}
-    ADD_PUBLIC_IP=${ADD_PUBLIC_IP:-"false"}
+    ADD_PUBLIC_IP=${ADD_PUBLIC_IP:-"true"}
 
     [[ ${OS_TYPE} == "ubuntu" ]] && SSH_USER="ubuntu" || SSH_USER="centos"
     [[ ${OS_TYPE} == "ubuntu" ]] && IMAGE="ubuntu-16.04" || IMAGE="centos7.4-1802"
@@ -260,29 +260,31 @@ function _display_inputs {
 }
 
 function _boot {
-    info_block "Booting new VM ${SERVER_NAME}"
-    openstack server create --insecure \
+    info_block "Booting new ${SERVER_NAME} VM"
+    openstack server create \
       --image ${IMAGE} \
       --flavor ${FLAVOR} \
       --security-group ${SEC_GROUP} \
       --key-name ${KEY_NAME} \
       --network ${NETWORK} \
       ${INSTANCE_NAME}
-    _log "VM booted. Waiting for its status to turn ACTIVE"
-    for i in {1..5}; do [[ $(openstack server show --insecure ${INSTANCE_NAME} -f value -c status) == "ACTIVE" ]] && break || sleep 5; done
-    _list_servers
+    if [ $? -eq 0 ]; then
+        _log "VM booted. Waiting for its status to turn ACTIVE"
+        for i in {1..5}; do [[ $(openstack server show --insecure ${INSTANCE_NAME} -f value -c status) == "ACTIVE" ]] && break || sleep 5; done
+        _list_servers ${INSTANCE_NAME}
+    fi
 }
 
 function _add_floating_ip {
     if [[ ! -z ${PUBLIC_IP} ]]; then
         _log "Adding floating ip ${PUBLIC_IP} to ${INSTANCE_NAME}"
-        openstack server add floating ip --insecure ${INSTANCE_NAME} ${PUBLIC_IP}
+        openstack server add floating ip ${INSTANCE_NAME} ${PUBLIC_IP}
     elif [[ ${ADD_PUBLIC_IP} = "true" ]]; then
-        PUBLIC_IP=$(openstack floating ip list --insecure --status DOWN -f value -c "Floating IP Address" | head -n 1)
+        PUBLIC_IP=$(openstack floating ip list --status DOWN -f value -c "Floating IP Address" | head -n 1)
         _log "Adding floating ip ${PUBLIC_IP} to ${INSTANCE_NAME}"
         openstack server add floating ip --insecure ${INSTANCE_NAME} ${PUBLIC_IP}
     fi
-    _list_servers
+    _list_servers ${INSTANCE_NAME}
 }
 
 function _assign_instance_ip {
@@ -295,8 +297,9 @@ function _assign_instance_ip {
 }
 
 function _add_to_ssh_config {
+    info_block "Configuring ${SERVER_NAME} for ssh"
     HOST="${SERVER_NAME}"
-    [[ ${KEY_NAME} == "alok_cloud" ]] && SSH_KEY="cloud" || SSH_KEY="alokaptira"
+    [[ ${KEY_NAME} == "alok_cloud" ]] && SSH_KEY="alokcloud" || SSH_KEY="alokaptira"
     host_string="Host ${HOST}"
 
     read -d '' new_host_string <<- EOM
@@ -313,7 +316,6 @@ EOM
         echo "$new_host_string" >> ~/.ssh/config
     fi
     _log "SSH configuration updated"
-    cat ~/.ssh/config
 }
 
 function _verify_ssh {
@@ -329,13 +331,27 @@ function _verify_ssh {
 function _list_servers {
     _log "Listing servers"
     if [[ -z ${APPEND_ALOK} ]]; then
-        openstack server list --insecure | grep alok
+        openstack server list | grep alok
     else
-        openstack server list --insecure
+        openstack server list | grep $1
     fi
 }
 
 function _preconfigure_instance {
+    info_block "Preconfiguring ${SERVER_NAME}"
+    SERVER_NAME=${1:-}
+    ssh -T ${SERVER_NAME} << EOF
+        url="https://raw.githubusercontent.com/rajalokan/okanstack/master/sclib.sh"
+        sudo apt install -y wget || sudo yum install -y wget
+        [[ -f /tmp/sclib.sh ]] || wget -q  $url -O /tmp/sclib.sh
+        source /tmp/sclib.sh
+
+        _preconfigure_vm
+EOF
+    _log "Successfully preconfigured ${SERVER_NAME}"
+}
+
+function _preconfigure_vm {
     GetOSVersion
     SERVER_NAME=${1:-}
     sudo hostname ${SERVER_NAME}
@@ -563,4 +579,72 @@ function setup_tmux() {
     is_package_installed tmux || install_package tmux
     base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/tmux"
     wget -q "$file_path/tmux.conf" -O ~/.tmux.conf
+}
+
+
+function bootstrap_vm() {
+    SERVER_NAME=${1:-"playbox"}
+    INSTANCE_NAME=${SERVER_NAME}-alok
+    OS_TYPE=${2:-"centos"}
+
+    source /tmp/secrets
+    _log "Booting VM ${INSTANCE_NAME}"
+
+    # Create server instance
+    openstack server create \
+        --image ${IMAGE} \
+        --flavor ${FLAVOR} \
+        --security-group ${SEC_GROUP} \
+        --key-name ${KEY_NAME} \
+        --network ${NETWORK} \
+        ${INSTANCE_NAME}
+
+    for i in {1..5}; do
+        if [[ $(openstack server show ${INSTANCE_NAME} -f value -c status) == "ACTIVE" ]]; then
+            break
+        else
+            _log "Waiting for server to become ACTIVE"
+            sleep 5;
+        fi
+    done
+
+    # Attach floating ip
+    PUBLIC_IP=$(openstack floating ip list --status DOWN -f value -c "Floating IP Address" | head -n 1)
+    _log "Attaching floating IP ${PUBLIC_IP}"
+    openstack server add floating ip --insecure ${INSTANCE_NAME} ${PUBLIC_IP}
+
+    # Add to ssh config
+    _log "Adding to ssh config file"
+    host_string="Host ${SERVER_NAME}"
+
+    read -d '' new_host_string <<- EOM
+Host ${SERVER_NAME}
+  HostName ${PUBLIC_IP}
+  User ${SSH_USER}
+  IdentityFile ~/.ssh/${KEY_NAME}.pem
+EOM
+
+    search=`grep "${host_string}" ~/.ssh/config`
+    if [[ ${search} = ${host_string} ]]; then
+        sed -i "/${host_string}/,+3 d" ~/.ssh/config
+        echo "$new_host_string" >> ~/.ssh/config
+    else
+        echo "$new_host_string" >> ~/.ssh/config
+    fi
+
+    sleep 5
+    # Verify SSH
+    ssh -T ${SERVER_NAME} exit && [ $? == 0 ] && _log "Success" \
+        || {
+            _error "Error. Trying again"; \
+            ssh-keygen -f "/home/${USER}/.ssh/known_hosts" -R ${PUBLIC_IP}; \
+            ssh ${SERVER_NAME} exit && _log "Success after adding correct host key." || _error "Failed"; \
+        }
+
+    # Configure instance
+    _log "Configuring ${INSTANCE_NAME}"
+    ssh -T ${SERVER_NAME} << EOF
+sudo hostname ${SERVER_NAME}
+grep -q ${SERVER_NAME} /etc/hosts || sudo sed -i "2i127.0.1.1   ${SERVER_NAME}" /etc/hosts
+EOF
 }
