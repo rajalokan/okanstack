@@ -364,6 +364,8 @@ function _preconfigure_vm {
         sudo yum install -y wget vim bash-completion
     fi
     setup_bash
+    setup_vim
+    setup_git
 }
 
 # ////////////////////////////////// Functions ////////////////////////////////
