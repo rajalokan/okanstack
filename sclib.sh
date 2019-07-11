@@ -287,7 +287,7 @@ function is_ubuntu {
 
 # ////////////////////////// Setup VM Functions ///////////////////////////////
 
-function setup_all {
+function preconfigure {
     GetOSVersion
     SERVER_NAME=${1:-}
     sudo hostname ${SERVER_NAME}
