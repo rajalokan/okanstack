@@ -478,6 +478,10 @@ EOF
 
 # //////////////////////////// Helper Functions ///////////////////////////////
 
+function get_public_ip {
+    _log $(curl -s https://ipinfo.io/ip)
+}
+
 function backup_if_present(){
     if [ -L $1 ]; then
         _log "Deleting link $1"
@@ -569,6 +573,20 @@ function get_pip {
     echo "A suitable download location for get-pip.py could not be found."
     exit_fail
   fi
+}
+
+# //////////////////////// Bootstrap Instances  ///////////////////////////////
+
+function bootstrap_playbox {
+    # APPEND_ALOK="false"
+    # OS_TYPE="centos"
+    # FLAVOR="m1.medium"
+    NETWORK=${NETWORK_NAME}
+    SEC_GROUP=${SECGRP_NAME}
+    KEY_NAME=${KEY_NAME}
+    SERVER_NAME="playbox"
+
+    bootstrap_openstack_vm
 }
 
 # //////////////////////////////// END  ///////////////////////////////////////
