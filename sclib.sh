@@ -471,7 +471,7 @@ function _preconfigure_instance {
         [[ -f /tmp/sclib.sh ]] || wget -q  $url -O /tmp/sclib.sh
         source /tmp/sclib.sh
 
-        setup_all
+        preconfigure ${SERVER_NAME}
 EOF
     _log "Successfully preconfigured ${SERVER_NAME}"
 }
