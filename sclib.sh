@@ -444,13 +444,17 @@ EOM
 }
 
 function _verify_ssh {
-    ssh ${SERVER_NAME} exit \
-      && [ $? == 0 ] \
-        && _log "Success" \
-        || {
-          ssh-keygen -f "/home/${USER}/.ssh/known_hosts" -R ${INSTANCE_IP}; \
-          ssh ${SERVER_NAME} exit && _log "Success after adding correct host key." || _error "Failed"; \
-        }
+    ssherr="port 22: Connection refused"
+    until $(ssh ${SERVER_NAME} exit); do
+        error=$(ssh ${SERVER_NAME} exit 2>&1)
+        if [[ $error == *$ssherr* ]]; then
+            _log "server not setup for ssh yet. Sleeping for 5 sec and trying again"
+            sleep 5
+        else
+            ssh-keygen -f "/home/${USER}/.ssh/known_hosts" -R ${INSTANCE_IP}; \
+        fi
+    done
+    _log "SSH for ${SERVER_NAME} successful"
 }
 
 function _list_servers {
