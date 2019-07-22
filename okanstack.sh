@@ -327,7 +327,7 @@ function setup_bash() {
 
     # Pureline
     pureline_url="https://raw.githubusercontent.com/chris-marsh/pureline/master/pureline"
-    wget -q $pureline_url -O /tmp/pureline
+    wget -q $pureline_url -O ~/.pureline
     wget -q "$base_url/pureline.conf" -O ~/.pureline.conf
 }
 
