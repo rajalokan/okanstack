@@ -2,6 +2,8 @@
 
 # /////////////////////////  Source ////////////////////////////////////////
 TOP_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+# Ensure git is installed
+sudo apt install -y git || sudo yum install -y git
 if [[ ! -d $TOP_DIR/okanstack ]]; then
     git clone https://github.com/rajalokan/okanstack.git ${TOP_DIR}/okanstack
 fi
