@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
-# /////////////////////////  Variables ////////////////////////////////////////
+# /////////////////////////  Source ////////////////////////////////////////
+TOP_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+if [[ ! -d $TOP_DIR/okanstack ]]; then
+    git clone https://github.com/rajalokan/okanstack.git ${TOP_DIR}/okanstack
+fi
 
+# /////////////////////////  Variables ////////////////////////////////////////
 PIP_INSTALL_OPTIONS=${PIP_INSTALL_OPTIONS:-'pip==9.0.1'}
 base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/bash"
 pureline_url="https://raw.githubusercontent.com/chris-marsh/pureline/master/pureline"
 
-# //////////////////////////  Sclib Functions /////////////////////////////////
 
+# //////////////////////////  Sclib Functions /////////////////////////////////
 function is_sclib_imported {
     [[ 0 ]]
 }
@@ -353,25 +358,45 @@ function setup_tmux() {
 function bootstrap_openstack_vm {
     _display_inputs
     _boot
-    _add_floating_ip
-    _assign_instance_ip
-    _add_to_ssh_config
-    _verify_ssh
-    _preconfigure_instance ${SERVER_NAME}
+    # _add_floating_ip
+    # _assign_instance_ip
+    # _add_to_ssh_config
+    # _verify_ssh
+    # _preconfigure_instance ${SERVER_NAME}
 }
 
 function _display_inputs {
-    APPEND_ALOK=${APPEND_ALOK:-"true"}
-    [[ -z ${APPEND_ALOK} ]] &&  INSTANCE_NAME="alok-${SERVER_NAME}" || INSTANCE_NAME="${SERVER_NAME}"
-    NETWORK=${NETWORK:-""}
-    FLAVOR=${FLAVOR:-"m1.small"}
-    SEC_GROUP=${SEC_GROUP:-"default"}
-    KEY_NAME=${KEY_NAME:-""}
-    OS_TYPE=${OS_TYPE:-"ubuntu"}
-    ADD_PUBLIC_IP=${ADD_PUBLIC_IP:-"true"}
-
-    [[ ${OS_TYPE} == "ubuntu" ]] && SSH_USER="ubuntu" || SSH_USER="centos"
+    OS_TYPE=${__OS_TYPE:-"ubuntu"}
+    # Set INSTANCE_NAME
+    APPEND_ALOK=${__APPEND_ALOK:-"true"}
+    SERVER_NAME=${__SERVER_NAME:-""}
+    if [[ -z ${SERVER_NAME} ]]; then
+        _error "Insufficient values. Please provide variable '__SERVER_NAME'"
+        _error "Exiting....."
+        return
+    fi
+    if [[ ${APPEND_ALOK} == "true" ]]; then
+        INSTANCE_NAME="alok-${__SERVER_NAME}"
+    elif [[ ${APPEND_ALOK} == "false" ]]; then
+        INSTANCE_NAME=${__SERVER_NAME}
+    fi
+    # Set IMAGE
     [[ ${OS_TYPE} == "ubuntu" ]] && IMAGE="ubuntu-16.04" || IMAGE="centos7.4-1802"
+    # Set NETWORK
+    NETWORK=${__NETWORK_NAME:-"alok"}
+    # Set FLAVOR
+    FLAVOR=${__FLAVOR:-"m1.small"}
+    # Set Security Group
+    SEC_GROUP=${__SECGRP_NAME:-"default"}
+    # Set Key
+    KEY_NAME=${__KEY_NAME:-"alok_cloud"}
+    # Whether to add public key or not
+    ADD_PUBLIC_IP=${__ADD_PUBLIC_IP:-"true"}
+    # public IP
+    PUBLIC_IP=${__PUBLIC_IP:-""}
+    # Set ssh user
+    [[ ${OS_TYPE} == "ubuntu" ]] && SSH_USER="ubuntu" || SSH_USER="centos"
+
     info_block "Configuration of new VM will be:"
     _log "Name            : ${INSTANCE_NAME}"
     _log "Image           : ${IMAGE}"
@@ -379,20 +404,15 @@ function _display_inputs {
     _log "Flavor          : ${FLAVOR}"
     _log "SecGroup        : ${SEC_GROUP}"
     _log "Key             : ${KEY_NAME}"
-    _log "IP              : ${PUBLIC_IP}"
     _log "ADD_PUBLIC_IP   : ${ADD_PUBLIC_IP}"
+    _log "IP              : ${PUBLIC_IP}"
     _log "User            : ${SSH_USER}"
 }
 
 function _boot {
     info_block "Booting new ${SERVER_NAME} VM"
-    openstack server create \
-      --image ${IMAGE} \
-      --flavor ${FLAVOR} \
-      --security-group ${SEC_GROUP} \
-      --key-name ${KEY_NAME} \
-      --network ${NETWORK} \
-      ${INSTANCE_NAME}
+    echo "openstack server create --image ${IMAGE} --flavor ${FLAVOR} --security-group ${SEC_GROUP} --key-name ${KEY_NAME} --network ${NETWORK} ${INSTANCE_NAME}"
+    openstack server create --image ${IMAGE} --flavor ${FLAVOR} --security-group ${SEC_GROUP} --key-name ${KEY_NAME} --network ${NETWORK} ${INSTANCE_NAME}
     if [ $? -eq 0 ]; then
         _log "VM booted. Waiting for its status to turn ACTIVE"
         for i in {1..5}; do [[ $(openstack server show --insecure ${INSTANCE_NAME} -f value -c status) == "ACTIVE" ]] && break || sleep 5; done
@@ -606,5 +626,30 @@ function install_docker {
     sudo apt-mark hold docker-ce
 }
 
+# ///////////////////////////// Bootstrap  ////////////////////////////////////
+# Bootstrap
+function bootstrap {
+    source "$TOP_DIR/okanstack/scripts/$1.sh"
+    if is_ubuntu; then
+        bootstrap_${1}_ubuntu
+    elif is_fedora; then
+        bootstrap_${1}_centos
+    else
+        exit_distro_not_supported "Bootstrapping $1"
+    fi
+}
+
+# ////////////////////////////// Install  /////////////////////////////////////
+# Install
+function install {
+    source "$TOP_DIR/okanstack/scripts/$1.sh"
+    if is_ubuntu; then
+        install_${1}_ubuntu
+    elif is_fedora; then
+        install_${1}_centos
+    else
+        exit_distro_not_supported "Installing $1"
+    fi
+}
 
 # //////////////////////////////// END  ///////////////////////////////////////
