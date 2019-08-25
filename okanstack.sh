@@ -80,13 +80,13 @@ function okanstack_preconfigure_vm {
     # configure_hosts
     # install_default_packages
 
-    _info "Setting up Bash"
+    _log "Setting up Bash"
     setup_bash
 
-    _info "Setting up Vim"
+    _log "Setting up Vim"
     # setup_vim
 
-    _info "Setting up git"
+    _log "Setting up git"
     # setup_git
 }
 

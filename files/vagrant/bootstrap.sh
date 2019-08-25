@@ -6,13 +6,14 @@ OSTYPE=${OSTYPE%\"}
 OSTYPE=${OSTYPE#\"}
 
 HOST_IP=$1
-[[ -z ${HOST_IP} ]] && echo "not present"
+# Fail silently and exit if can't find HOST_IP
+[[ -z ${HOST_IP} ]] && exit 0
 
 if [[ ${OSTYPE} = "Ubuntu" ]]; then
-    sudo bash -c 'cat > /etc/apt/apt.conf.d/01proxy << EOF
+    sudo tee /etc/apt/apt.conf.d/01proxy > /dev/null << EOF
 Acquire::HTTP::Proxy "http://${HOST_IP}:3142";
 Acquire::HTTPS::Proxy "false";
-EOF'
+EOF
 elif [[ ${OSTYPE} = "CentOS" ]]; then
     if grep -q "proxy=.*" /etc/yum.conf; then
         # Update yum config
@@ -30,7 +31,4 @@ sudo apt install -y wget > /dev/null 2>&1 \
 if [[ ! -f /tmp/okanstack.sh ]]; then
     wget -q https://raw.githubusercontent.com/rajalokan/okanstack/master/okanstack.sh -O /tmp/okanstack.sh
 fi
-source /tmp/okanstack.sh
-
-# Preconfigure the instance
-okanstack_preconfigure_vm
+source /tmp/okanstack.sh && okanstack_preconfigure_vm
