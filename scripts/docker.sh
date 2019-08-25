@@ -9,6 +9,9 @@ function install_docker_ubuntu {
     sudo apt-get update
     sudo apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
     sudo apt-mark hold docker-ce
+
+    sudo groupadd docker
+    sudo usermod -aG docker $USER
 }
 
 function install_docker_centos {
@@ -23,4 +26,7 @@ function install_docker_centos {
     # reload systemd, enable and start Docker
     sudo systemctl daemon-reload
     sudo systemctl enable docker --now
+
+    sudo groupadd docker
+    sudo usermod -aG docker $USER
 }
