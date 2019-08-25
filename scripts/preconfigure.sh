@@ -1,30 +1,43 @@
 #!/usr/bin/env bash
 
 
+function configure_hosts {
+    GetOSVersion
+    SERVER_NAME=${1:-"playbox"}
+    sudo hostname ${SERVER_NAME}
+    grep -q ${SERVER_NAME} /etc/hosts || sudo sed -i "2i127.0.1.1  ${SERVER_NAME}" /etc/hosts
+}
+
+function install_default_packages {
+    if [[ ${os_VENDOR,,} == "ubuntu" ]]; then
+        sudo apt update
+    elif [[ ${os_VENDOR,,} == "centos" ]]; then
+        sudo yum install -y epel-release
+        sudo yum install -y bash-completion
+    fi
+}
+
 function setup_bash() {
     GetOSVersion
+    bash_url="$base_url/files/bash"
+    # Fetch bashrc & profile
     if is_ubuntu; then
-        # Fetch bashrc & profile
-        file_path="$base_url/ubuntu/$os_RELEASE"
-        wget -q "$file_path/bashrc" -O ~/.bashrc
-        wget -q "$file_path/profile" -O ~/.profile
+        wget -q "$bash_url/ubuntu/bashrc" -O ~/.bashrc
+        wget -q "$bash_url/ubuntu/profile" -O ~/.profile
     elif is_fedora; then
-        # Fetch bashrc & bash_profile
-        file_path="$base_url/centos"
-        wget -q "$file_path/bashrc" -O ~/.bashrc
-        wget -q "$file_path/bash_profile" -O ~/.bash_profile
+        wget -q "$bash_url/centos/bashrc" -O ~/.bashrc
+        wget -q "$base_url/centos/bash_profile" -O ~/.bash_profile
     else
         exit_distro_not_supported "Installing packages"
     fi
     # copy bashrc_okan
-    wget -q "$base_url/bashrc_okan" -O ~/.bashrc_okan
+    wget -q "$bash_url/bashrc_okan" -O ~/.bashrc_okan
     # copy bash_aliases
-    wget -q "$base_url/bash_aliases" -O ~/.bash_aliases
+    wget -q "$bash_url/bash_aliases" -O ~/.bash_aliases
 
     # Pureline
-    pureline_url="https://raw.githubusercontent.com/chris-marsh/pureline/master/pureline"
     wget -q $pureline_url -O ~/.pureline
-    wget -q "$base_url/pureline.conf" -O ~/.pureline.conf
+    wget -q "$bash_url/pureline.conf" -O ~/.pureline.conf
 }
 
 function setup_vim() {

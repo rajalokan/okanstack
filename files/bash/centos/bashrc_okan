@@ -1,11 +1,8 @@
 ### My Customization ###
 #======================#
 
-PS1="\[$(tput bold)\]\[\033[31;5;1m\]\u\[$(tput sgr0)\]\[$(tput sgr0)\]\[\033[33;5;1m\]@\[$(tput sgr0)\]\[\033[33;5;1m\]\h\[$(tput sgr0)\] \[\033[01;34m\]\W\[\033[00m\] $ "
+PS1="\[$(tput bold)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[$(tput sgr0)\]\[\033[38;5;2m\]@\[$(tput sgr0)\]\[\033[38;5;1m\]\h\[$(tput sgr0)\] \[\033[01;34m\]\W\[\033[00m\] $ "
 PS2="$HC$FYEL&gt; $RS"
-
-# PS1="\[$(tput bold)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[$(tput sgr0)\]\[\033[38;5;2m\]@\[$(tput sgr0)\]\[\033[38;5;1m\]\h\[$(tput sgr0)\] \[\033[01;34m\]\W\[\033[00m\] $ "
-# PS2="$HC$FYEL&gt; $RS"
 
 # Alias definitions
 if [ -f ${HOME}/.bash_aliases ]; then

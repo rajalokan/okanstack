@@ -2,7 +2,7 @@
 
 # #########################  Variables ########################################
 PIP_INSTALL_OPTIONS=${PIP_INSTALL_OPTIONS:-'pip==9.0.1'}
-base_url="https://raw.githubusercontent.com/rajalokan/okanstack/master/"
+base_url="https://raw.githubusercontent.com/rajalokan/okanstack/master"
 pureline_url="https://raw.githubusercontent.com/chris-marsh/pureline/master/pureline"
 TOP_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 base_okanstack_url="https://raw.githubusercontent.com/rajalokan/okanstack/master/files/bash"
@@ -72,31 +72,23 @@ function install {
     fi
 }
 
-function okanstack_debug {
-    load
-    _log "asdf"
-}
-
 function okanstack_preconfigure_vm {
     load
     source "$TOP_DIR/okanstack/scripts/preconfigure.sh"
 
-    # GetOSVersion
-    # SERVER_NAME=${1:-}
-    # sudo hostname ${SERVER_NAME}
-    # grep -q ${SERVER_NAME} /etc/hosts || sudo sed -i "2i127.0.1.1  ${SERVER_NAME}" /etc/hosts
-    #
-    # if [[ ${os_VENDOR,,} == "ubuntu" ]]; then
-    #     sudo apt update
-    # elif [[ ${os_VENDOR,,} == "centos" ]]; then
-    #     sudo yum install -y epel-release
-    #     sudo yum install -y wget vim bash-completion
-    # fi
-    # setup_bash
+    is_package_installed wget || install_package wget
+
+    # configure_hosts
+    # install_default_packages
+
+    _info "Setting up Bash"
+    setup_bash
+
     _info "Setting up Vim"
-    setup_vim
+    # setup_vim
+
     _info "Setting up git"
-    setup_git
+    # setup_git
 }
 
-# //////////////////////////////// END  ///////////////////////////////////////
+# ################################ END #######################################
