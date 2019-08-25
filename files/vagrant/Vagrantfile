@@ -3,10 +3,15 @@
 
 VAGRANTFILE_API_VERSION=2
 
+host_ip = `hostname -I | cut -d' ' -f1`
+
 Vagrant.configure("2") do |config|
     config.vm.network "forwarded_port", guest: 8888, host: 8888
+  	config.vbguest.auto_update = false
     config.vm.provision :shell do |shell|
         shell.path = "~/.vagrant.d/bootstrap.sh"
-        shell.args = "#{ENV['HOST_IP']}"
+        # shell.args = "#{ENV['HOST_IP']}"
+        shell.args = "#{host_ip}"
+        shell.privileged = false
     end
 end

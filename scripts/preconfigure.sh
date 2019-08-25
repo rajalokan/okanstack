@@ -22,8 +22,8 @@ function setup_bash() {
     bash_url="$base_url/files/bash"
     # Fetch bashrc & profile
     if is_ubuntu; then
-        wget -q "$bash_url/ubuntu/bashrc" -O ~/.bashrc
-        wget -q "$bash_url/ubuntu/profile" -O ~/.profile
+        wget -q "$bash_url/ubuntu/18.04/bashrc" -O ~/.bashrc
+        wget -q "$bash_url/ubuntu/18.04/profile" -O ~/.profile
     elif is_fedora; then
         wget -q "$bash_url/centos/bashrc" -O ~/.bashrc
         wget -q "$bash_url/centos/bash_profile" -O ~/.bash_profile
