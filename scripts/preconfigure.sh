@@ -36,7 +36,7 @@ function setup_bash() {
     wget -q "$bash_url/bash_aliases" -O ~/.bash_aliases
 
     # Pureline
-    wget -q $pureline_url -O ~/.pureline
+    wget -q "$bash_url/pureline" -O ~/.pureline
     wget -q "$bash_url/pureline.conf" -O ~/.pureline.conf
 }
 
