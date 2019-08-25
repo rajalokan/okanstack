@@ -15,7 +15,6 @@ function okanstack_init {
         || sudo yum install -y git > /dev/null 2>&1
     # Clone okanstack git repo
     if [[ ! -d $TOP_DIR/okanstack ]]; then
-        _log "Cloning okanstack git repo"
         git clone https://github.com/rajalokan/okanstack.git ${TOP_DIR}/okanstack > /dev/null 2>&1
     fi
 }
@@ -92,3 +91,5 @@ function okanstack_preconfigure_vm {
 }
 
 # ################################ END #######################################
+
+is_sclib_imported && okanstack_init

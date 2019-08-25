@@ -26,7 +26,7 @@ function setup_bash() {
         wget -q "$bash_url/ubuntu/profile" -O ~/.profile
     elif is_fedora; then
         wget -q "$bash_url/centos/bashrc" -O ~/.bashrc
-        wget -q "$base_url/centos/bash_profile" -O ~/.bash_profile
+        wget -q "$bash_url/centos/bash_profile" -O ~/.bash_profile
     else
         exit_distro_not_supported "Installing packages"
     fi
