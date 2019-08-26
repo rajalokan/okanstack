@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
-
+function bootstrap_minikube_ubuntu {
+    _bootstrap_minikube
+}
 function bootstrap_minikube_centos {
+    _bootstrap_minikube
+}
+
+function _bootstrap_minikube {
     _log "Bootstrapping Minikube"
+
     # Install docker runtime container
     install docker
 
@@ -45,5 +52,7 @@ function bootstrap_minikube_centos {
 
     # sudo -E minikube addons enable dashboard
 
-    minikube status
+    # minikube status
+
+    #statements
 }

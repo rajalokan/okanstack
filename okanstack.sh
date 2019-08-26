@@ -47,7 +47,8 @@ function bootstrap_playbox {
 
 # ///////////////////////////// Bootstrap  ////////////////////////////////////
 # Bootstrap
-function bootstrap {
+function ostack_bootstrap {
+    load
     source "$TOP_DIR/okanstack/scripts/$1.sh"
     if is_ubuntu; then
         bootstrap_${1}_ubuntu
