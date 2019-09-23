@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$bootstrap = <<SCRIPT
+if [[ ! -f ~/.okanstack.sh ]]; then
+    wget -q https://raw.githubusercontent.com/rajalokan/okanstack/master/okanstack.sh -O ~/.okanstack.sh
+fi
+source ~/.okanstack.sh && ostack_bootstrap minikube
+SCRIPT
+
+$configure = <<SCRIPT
+SCRIPT
+
+
+Vagrant.configure("2") do |config|
+    config.vm.hostname = "minikube"
+    config.vm.box = "bento/ubuntu-18.04"
+	config.vm.synced_folder "../minikube", "/opt/minikube"
+    config.vm.provider :virtualbox do |vb|
+        vb.memory = 2048
+        vb.cpus = 2
+        vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+    end
+    #config.vm.provision "shell", inline: $bootstrap, privileged: false
+    #config.vm.provision "shell", inline: $configure, privileged: false
+end

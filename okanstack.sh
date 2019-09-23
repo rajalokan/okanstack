@@ -9,13 +9,11 @@ base_okanstack_url="https://raw.githubusercontent.com/rajalokan/okanstack/master
 
 # ############################# Init ##########################################
 function okanstack_init {
-    #statements
-    # Ensure git is installed
-    sudo apt install -y git > /dev/null 2>&1 \
-        || sudo yum install -y git > /dev/null 2>&1
     # Clone okanstack git repo
-    if [[ ! -d $TOP_DIR/okanstack ]]; then
-        git clone https://github.com/rajalokan/okanstack.git ${TOP_DIR}/okanstack > /dev/null 2>&1
+    if [[ ! -d $TOP_DIR/.okanstack ]]; then
+        # Ensure git is installed
+        sudo apt install -y git > /dev/null 2>&1 || sudo yum install -y git > /dev/null 2>&1
+        git clone https://github.com/rajalokan/okanstack.git ${TOP_DIR}/.okanstack > /dev/null 2>&1
     fi
 }
 
@@ -27,8 +25,8 @@ function is_sclib_imported {
 }
 
 function load {
-    source "$TOP_DIR/okanstack/scripts/core.sh"
-    source "$TOP_DIR/okanstack/scripts/log.sh"
+    source "$TOP_DIR/.okanstack/scripts/core.sh"
+    source "$TOP_DIR/.okanstack/scripts/log.sh"
 }
 
 # //////////////////////// Bootstrap Instances  ///////////////////////////////
@@ -49,7 +47,7 @@ function bootstrap_playbox {
 # Bootstrap
 function ostack_bootstrap {
     load
-    source "$TOP_DIR/okanstack/scripts/$1.sh"
+    source "$TOP_DIR/.okanstack/scripts/$1.sh"
     if is_ubuntu; then
         bootstrap_${1}_ubuntu
     elif is_fedora; then
@@ -61,8 +59,9 @@ function ostack_bootstrap {
 
 # ////////////////////////////// Install  /////////////////////////////////////
 # Install
-function install {
-    source "$TOP_DIR/okanstack/scripts/$1.sh"
+function ostack_install {
+    _log "Installing $1"
+    source "$TOP_DIR/.okanstack/scripts/$1.sh"
     if is_ubuntu; then
         install_${1}_ubuntu
     elif is_fedora; then
@@ -72,9 +71,9 @@ function install {
     fi
 }
 
-function okanstack_preconfigure_vm {
+function ostack_preconfigure_vm {
     load
-    source "$TOP_DIR/okanstack/scripts/preconfigure.sh"
+    source "$TOP_DIR/.okanstack/scripts/preconfigure.sh"
 
     is_package_installed wget || install_package wget
 
@@ -93,4 +92,4 @@ function okanstack_preconfigure_vm {
 
 # ################################ END #######################################
 
-is_sclib_imported && okanstack_init
+okanstack_init

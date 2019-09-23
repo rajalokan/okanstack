@@ -10,8 +10,7 @@ Vagrant.configure("2") do |config|
   	config.vbguest.auto_update = false
     config.vm.provision :shell do |shell|
         shell.path = "~/.vagrant.d/bootstrap.sh"
-        # shell.args = "#{ENV['HOST_IP']}"
-        shell.args = "#{host_ip}"
+        shell.args = "#{ENV['GITHUB_TOKEN']} #{host_ip}"
         shell.privileged = false
     end
 end

@@ -10,19 +10,23 @@ function _bootstrap_minikube {
     _log "Bootstrapping Minikube"
 
     # Install docker runtime container
-    install docker
+    is_package_installed docker-ce || ostack_install docker
 
     # Install kubectl
-    _log "Installing kubectl"
-    curl -q -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl 2>/dev/null
-    chmod +x kubectl
-    sudo mv kubectl /usr/local/bin/
+    if [[ ! -f /usr/local/bin/kubectl ]]; then
+        _log "Installing kubectl"
+        curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+    fi
 
     # Install minikube
-    _log "Installing Minikube"
-    curl -q -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 2>/dev/null
-    chmod +x minikube
-    sudo mv minikube /usr/local/bin/
+    if [[ ! -f /usr/local/bin/minikube ]]; then
+        _log "Installing Minikube"
+        curl -q -Lo https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        chmod +x minikube
+        sudo mv minikube /usr/local/bin/
+    fi
 
     # Setup minikube
     echo "127.0.0.1 minikube minikube." | sudo tee -a /etc/hosts
@@ -37,10 +41,8 @@ function _bootstrap_minikube {
     export MINIKUBE_WANTUPDATENOTIFICATION=false
     export MINIKUBE_WANTREPORTERRORPROMPT=false
     export MINIKUBE_HOME=$HOME
-    export CHANGE_MINIKUBE_NONE_USER=true
-
-
     # export MINIKUBE_HOME=$HOME/.minikube
+    export CHANGE_MINIKUBE_NONE_USER=true
 
     # Fix in kubeadm
     echo '1' | sudo tee /proc/sys/net/bridge/bridge-nf-call-iptables
@@ -51,8 +53,5 @@ function _bootstrap_minikube {
     sudo -E minikube start --vm-driver none
 
     # sudo -E minikube addons enable dashboard
-
-    # minikube status
-
-    #statements
+    minikube status
 }

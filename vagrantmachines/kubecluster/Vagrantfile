@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VER = "2"
+
+cluster = {
+  "master1" => { :ip => "192.168.33.11", :cpus => 2, :mem => 2048, :scriptPath => "scripts/bootstrap_master.sh" },
+  "worker1" => { :ip => "192.168.33.21", :cpus => 2, :mem => 2048, :scriptPath => "scripts/bootstrap_worker.sh"},
+  "worker2" => { :ip => "192.168.33.22", :cpus => 2, :mem => 2048, :scriptPath => "scripts/bootstrap_worker.sh"}
+}
+
+Vagrant.configure(VAGRANTFILE_API_VER) do |config|
+    cluster.each_with_index do |(key, value), index|
+        config.vm.box = "bento/ubuntu-18.04"
+        config.vm.define key do |cfg|
+            cfg.vm.hostname = key
+            cfg.vm.network "private_network", ip: "#{value[:ip]}"
+            cfg.vm.provider :virtualbox do |vb|
+                vb.memory = value[:mem]
+                vb.cpus = value[:cpus]
+                vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+            end
+            cfg.vm.provision :shell do |shell|
+                shell.path = value[:scriptPath]
+                shell.privileged = false
+            end
+        end
+    end
+end

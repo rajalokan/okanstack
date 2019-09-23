@@ -5,9 +5,29 @@ OSTYPE=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 OSTYPE=${OSTYPE%\"}
 OSTYPE=${OSTYPE#\"}
 
-HOST_IP=$1
+
+if [[ $# -le 1 ]]; then
+    echo "Only one or less arguments provided. Probably GITHUB_TOKEN is not set. Exiting"
+    exit 0
+fi
+
+GITHUB_TOKEN=$1
+HOST_IP=$2
+
+
 # Fail silently and exit if can't find HOST_IP
-[[ -z ${HOST_IP} ]] && exit 0
+if [[ -z ${HOST_IP} ]]; then
+    echo "Host IP not provided. Exiting.."
+    exit 0
+fi
+
+# echo ${GITHUB_TOKEN}
+if [[ -z ${GITHUB_TOKEN} ]]; then
+    echo "Github token not provided. Exiting.."
+    exit 0
+fi
+
+OKANSTACK_URL="https://${GITHUB_TOKEN}@raw.githubusercontent.com/rajalokan/okanstack/master/okanstack.sh"
 
 if [[ ${OSTYPE} = "Ubuntu" ]]; then
     sudo tee /etc/apt/apt.conf.d/01proxy > /dev/null << EOF
@@ -24,11 +44,14 @@ elif [[ ${OSTYPE} = "CentOS" ]]; then
     fi
 fi
 
-# Configure Instance
+# Install basic packages
 sudo apt install -y wget > /dev/null 2>&1 \
     || sudo yum install -y wget > /dev/null 2>&1
 
-if [[ ! -f /tmp/okanstack.sh ]]; then
-    wget -q https://raw.githubusercontent.com/rajalokan/okanstack/master/okanstack.sh -O /tmp/okanstack.sh
+# Fetch latest okanstack.sh if not present
+if [[ ! -f ${HOME}/.okanstack.sh ]]; then
+    wget -q -O ${HOME}/.okanstack.sh ${OKANSTACK_URL}
 fi
-source /tmp/okanstack.sh && okanstack_preconfigure_vm
+
+# Source and run preconfigure
+source ${HOME}/.okanstack.sh && ostack_preconfigure_vm
