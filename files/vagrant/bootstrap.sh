@@ -27,7 +27,6 @@ if [[ -z ${GITHUB_TOKEN} ]]; then
     exit 0
 fi
 
-OKANSTACK_URL="https://${GITHUB_TOKEN}@raw.githubusercontent.com/rajalokan/okanstack/master/okanstack.sh"
 
 if [[ ${OSTYPE} = "Ubuntu" ]]; then
     sudo tee /etc/apt/apt.conf.d/01proxy > /dev/null << EOF
@@ -50,8 +49,9 @@ sudo apt install -y wget > /dev/null 2>&1 \
 
 # Fetch latest okanstack.sh if not present
 if [[ ! -f ${HOME}/.okanstack.sh ]]; then
+    OKANSTACK_URL="https://${GITHUB_TOKEN}@raw.githubusercontent.com/rajalokan/okanstack/master/okanstack.sh"
     wget -q -O ${HOME}/.okanstack.sh ${OKANSTACK_URL}
 fi
 
 # Source and run preconfigure
-source ${HOME}/.okanstack.sh && ostack_preconfigure_vm
+source ${HOME}/.okanstack.sh && ostack_preconfigure
