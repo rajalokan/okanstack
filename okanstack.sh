@@ -44,12 +44,16 @@ function ostack_preconfigure {
 
     is_package_installed wget || install_package wget
 
-    configure_hosts
     install_default_packages
 
     setup_bash
     setup_vim
     setup_git
+}
+
+function ostack_configure_hosts {
+    source "$TOP_DIR/.okanstack/scripts/preconfigure.sh"
+    configure_hosts $1
 }
 
 # ############################# Init ##########################################

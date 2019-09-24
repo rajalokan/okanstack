@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-
-
 function configure_hosts {
     _log "Configuring Hosts file"
     GetOSVersion

@@ -29,11 +29,6 @@ function _bootstrap_minikube {
         sudo mv minikube /usr/local/bin/
     fi
 
-    # Setup minikube
-    if ! $(grep "127.0.1.1.*minikube.*minikube" /etc/hosts >/dev/null); then
-        echo "127.0.1.1        minikube        minikube" | sudo tee -a /etc/hosts
-    fi
-
     mkdir -p $HOME/.minikube
     mkdir -p $HOME/.kube
     touch $HOME/.kube/config
