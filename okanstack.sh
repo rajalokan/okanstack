@@ -47,14 +47,9 @@ function ostack_preconfigure {
     configure_hosts
     install_default_packages
 
-    _log "Setting up Bash"
     setup_bash
-
-    _log "Setting up Vim"
-    # setup_vim
-
-    _log "Setting up git"
-    # setup_git
+    setup_vim
+    setup_git
 }
 
 # ############################# Init ##########################################

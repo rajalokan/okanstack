@@ -2,6 +2,7 @@
 
 
 function configure_hosts {
+    _log "Configuring Hosts file"
     GetOSVersion
     SERVER_NAME=${1:-"playbox"}
     sudo hostname ${SERVER_NAME}
@@ -9,9 +10,10 @@ function configure_hosts {
 }
 
 function install_default_packages {
+    _log "Installing default packages"
     if [[ ${os_VENDOR,,} == "ubuntu" ]]; then
         sudo apt update
-        sudo apt -y upgrade
+        # sudo apt -y upgrade
         sudo apt install -y bash-completion
     elif [[ ${os_VENDOR,,} == "centos" ]]; then
         sudo yum install -y epel-release bash-completion
@@ -19,6 +21,7 @@ function install_default_packages {
 }
 
 function setup_bash() {
+    _log "Setting up Bash"
     GetOSVersion
     bash_url="$base_url/files/bash"
     # Fetch bashrc & profile
@@ -42,10 +45,12 @@ function setup_bash() {
 }
 
 function setup_vim() {
+    _log "Setting up Vim"
     is_package_installed vim || install_package vim
 }
 
 function setup_git() {
+    _log "Setting up git"
     is_package_installed git || install_package git
     # base_url="https://raw.githubusercontent.com/rajalokan/ansible-role-dotfiles/master/files/git"
     # wget -q "$base_url/gitconfig" -O ~/.gitconfig
