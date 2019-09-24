@@ -44,8 +44,8 @@ function ostack_preconfigure {
 
     is_package_installed wget || install_package wget
 
-    # configure_hosts
-    # install_default_packages
+    configure_hosts
+    install_default_packages
 
     _log "Setting up Bash"
     setup_bash

@@ -11,10 +11,10 @@ function configure_hosts {
 function install_default_packages {
     if [[ ${os_VENDOR,,} == "ubuntu" ]]; then
         sudo apt update
+        sudo apt -y upgrade
         sudo apt install -y bash-completion
     elif [[ ${os_VENDOR,,} == "centos" ]]; then
-        sudo yum install -y epel-release
-        sudo yum install -y bash-completion
+        sudo yum install -y epel-release bash-completion
     fi
 }
 
