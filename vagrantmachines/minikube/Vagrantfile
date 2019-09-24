@@ -13,7 +13,7 @@ if [[ ! -f ~/.okanstack.sh ]]; then
     wget -q https://raw.githubusercontent.com/rajalokan/okanstack/master/okanstack.sh -O ~/.okanstack.sh
 fi
 source ~/.okanstack.sh && ostack_install go
-sudo apt install -y gcc
+sudo apt install -y gcc pkg-config libvirt-dev
 SCRIPT
 
 
