@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-function install_go_ubuntu {
-    _install_go
+function install_golang_ubuntu {
+    _install_golang
 }
 
-function install_go_centos {
-    _install_go
+function install_golang_centos {
+    _install_golang
 }
 
-function _install_go() {
+function _install_golang() {
     VERSION="1.13"
     OS="linux"
     ARCH="amd64"
