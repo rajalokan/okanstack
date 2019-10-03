@@ -44,7 +44,7 @@ elif [[ ${OSTYPE} = "CentOS" ]]; then
 fi
 
 # Install basic packages
-sudo apt install -y wget > /dev/null 2>&1 \
+sudo apt-get install -y wget > /dev/null 2>&1 \
     || sudo yum install -y wget > /dev/null 2>&1
 
 # Fetch latest okanstack.sh if not present
