@@ -6,9 +6,6 @@ on:
   push:
     branches: [ master ]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
@@ -19,10 +16,10 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Building
-        run: echo Building
+        run: echo Building ${GITHUB_SHA::6}
 
       - name: Pushing
-        run: echo Pushing
+        run: echo Pushing ${GITHUB_SHA::6}
 
   deploy-staging:
     name: Deploy to Staging
@@ -37,17 +34,3 @@ jobs:
       
       - name: Deploy to staging
         run: echo Deploying to Staging
-
-  deploy-qa:
-    name: Deploy to QA
-    needs: [deploy-staging]
-    runs-on: ubuntu-latest
-    environment: 
-      name: qa
-      url: https://rajalokan.com
-      
-    steps:
-      - uses: actions/checkout@v2
-      
-      - name: Deploy to QA
-        run: echo Deploying to QA
