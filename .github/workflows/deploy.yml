@@ -37,3 +37,17 @@ jobs:
       
       - name: Deploy to staging
         run: echo Deploying to Staging
+
+  deploy-qa:
+    name: Deploy to QA
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    environment: 
+      name: qa
+      url: https://rajalokan.com
+      
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Deploy to QA
+        run: echo Deploying to QA
