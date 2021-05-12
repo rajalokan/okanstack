@@ -5,10 +5,13 @@ on:
       commit-hash:
         description: Github commit hash to deploy
         required: true
+      release-tag:
+        description: Semver release tag
+        required: true
 
 jobs:
   deploy-qa:
-    name: Deploy to qa
+    name: Deploy to QA
     runs-on: ubuntu-latest
     environment: 
       name: qa
@@ -18,10 +21,11 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Deploy to QA
-        run: echo Deploying to QA
+        run: echo Deploying ${{ github.event.inputs.commit-hash }} to QA
 
   deploy-prod:
     name: Deploy to Production
+    needs: [deploy-qa]
     runs-on: ubuntu-latest
     environment: 
       name: production
@@ -31,4 +35,4 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Deploy to Production
-        run: echo Deploying to Production
+        run: echo Deploying ${{ github.event.inputs.commit-hash }} to Production
