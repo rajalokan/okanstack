@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy To Stage
 
 # Controls when the action will run. 
 on:
