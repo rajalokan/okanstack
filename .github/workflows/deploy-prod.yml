@@ -1,0 +1,34 @@
+name: Deploy To Prod
+on:
+  workflow_dispatch:
+    inputs:
+      commit-hash:
+        description: Github commit hash to deploy
+        required: true
+
+jobs:
+  deploy-qa:
+    name: Deploy to qa
+    runs-on: ubuntu-latest
+    environment: 
+      name: qa
+      url: https://rajalokan.com
+      
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Deploy to QA
+        run: echo Deploying to QA
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+      url: https://rajalokan.com
+      
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Deploy to Production
+        run: echo Deploying to Production
