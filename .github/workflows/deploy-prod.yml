@@ -1,7 +1,10 @@
 name: Deploy To Prod
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      ansible-playbook:
+        description: Github commit hash to deploy
+        required: true
     
 jobs:
   deploy-qa:
